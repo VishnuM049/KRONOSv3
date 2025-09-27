@@ -101,5 +101,20 @@ def api_rerun_from_day():
     return jsonify({"status": "success", "message": f"Rerun from Day {start_day} complete."})
 
 
+@app.route('/get_explanations', methods=['GET'])
+def api_get_explanations():
+    if not os.path.exists(MASTER_LOG_FILE):
+        return jsonify({"status": "error", "message": "Master log file not found."}), 400
+
+    with open(MASTER_LOG_FILE, 'r') as f:
+        master_log = json.load(f)
+
+    explanations = [
+        {"day": entry["day"], "shap_explanations": entry["shap_explanations"]}
+        for entry in master_log
+    ]
+    return jsonify({"status": "success", "data": explanations})
+
+
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)
