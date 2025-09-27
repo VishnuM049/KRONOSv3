@@ -6,7 +6,7 @@ import { transformFleetData, getFleetSummary, loadSimulationData } from './simul
 
 // --- Sub-Components ---
 
-const Sidebar = ({ isOpen, onClose, onDatePrediction, onChatbot, onAllTrainsets }) => (
+const Sidebar = ({ isOpen, onClose, onDatePrediction, onAllTrainsets, onExplainability }) => (
   <div className={`fixed inset-y-0 left-0 z-50 w-80 bg-gradient-to-b from-gray-800 to-gray-900 shadow-2xl border-r border-gray-600 transform transition-transform duration-300 ${isOpen ? 'translate-x-0' : '-translate-x-full'}`}>
     <div className="p-6">
       <div className="flex justify-between items-center mb-8">
@@ -29,17 +29,6 @@ const Sidebar = ({ isOpen, onClose, onDatePrediction, onChatbot, onAllTrainsets 
         </button>
         
         <button 
-          onClick={onChatbot}
-          className="w-full flex items-center gap-4 p-4 bg-gray-700/50 hover:bg-gray-700 rounded-xl transition-all duration-300 text-white hover:text-teal-300 group"
-        >
-          <MessageCircle size={20} className="text-teal-400 group-hover:text-teal-300" />
-          <div className="text-left">
-            <div className="font-semibold">AI Chatbot</div>
-            <div className="text-sm text-gray-400">Get AI assistance</div>
-          </div>
-        </button>
-        
-        <button 
           onClick={onAllTrainsets}
           className="w-full flex items-center gap-4 p-4 bg-gray-700/50 hover:bg-gray-700 rounded-xl transition-all duration-300 text-white hover:text-teal-300 group"
         >
@@ -47,6 +36,17 @@ const Sidebar = ({ isOpen, onClose, onDatePrediction, onChatbot, onAllTrainsets 
           <div className="text-left">
             <div className="font-semibold">All Trainsets</div>
             <div className="text-sm text-gray-400">View all trainset health status</div>
+          </div>
+        </button>
+
+        <button 
+          onClick={onExplainability}
+          className="w-full flex items-center gap-4 p-4 bg-gray-700/50 hover:bg-gray-700 rounded-xl transition-all duration-300 text-white hover:text-teal-300 group"
+        >
+          <FileText size={20} className="text-teal-400 group-hover:text-teal-300" />
+          <div className="text-left">
+            <div className="font-semibold">Explainability</div>
+            <div className="text-sm text-gray-400">View AI explanations</div>
           </div>
         </button>
       </div>
@@ -352,7 +352,7 @@ export default function App() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [showDatePrediction, setShowDatePrediction] = useState(false);
   const [showAllTrainsets, setShowAllTrainsets] = useState(false);
-  const [showChatbot, setShowChatbot] = useState(false);
+  const [showExplainability, setShowExplainability] = useState(false);
   const [simulationData, setSimulationData] = useState([]);
   const [selectedDay, setSelectedDay] = useState(1);
   const [loading, setLoading] = useState(true);
@@ -377,11 +377,6 @@ export default function App() {
   const handleDateSelect = (day) => {
     setSelectedDay(day);
     setShowDatePrediction(false);
-  };
-
-  const handleChatbotClick = () => {
-    setSidebarOpen(false);
-    setShowChatbot(true);
   };
 
   const fleetSummary = getFleetSummary(simulationData, selectedDay);
@@ -413,10 +408,13 @@ export default function App() {
           setSidebarOpen(false);
           setShowDatePrediction(true);
         }}
-        onChatbot={handleChatbotClick}
         onAllTrainsets={() => {
           setSidebarOpen(false);
           setShowAllTrainsets(true);
+        }}
+        onExplainability={() => {
+          setSidebarOpen(false);
+          setShowExplainability(true);
         }}
       />
 
@@ -454,7 +452,11 @@ export default function App() {
         selectedDay={selectedDay}
       />
       <AllTrainsetsPage isOpen={showAllTrainsets} onClose={() => setShowAllTrainsets(false)} trains={fleet} />
-      <ChatbotModal isOpen={showChatbot} onClose={() => setShowChatbot(false)} />
+      <ExplainabilityModal 
+        isOpen={showExplainability} 
+        onClose={() => setShowExplainability(false)} 
+        explanations={simulationData.map(d => d.shap_explanations)} 
+      />
 
       <style jsx global>{`
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
